@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioData Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen font-sans">
+
+    <div id="login-box" class="flex items-center justify-center min-h-screen">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-96 border border-gray-700">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400 text-center">Admin Login</h2>
+            <input type="password" id="admin-pass" placeholder="Password" class="w-full p-3 bg-gray-900 border border-gray-600 rounded mb-4 focus:outline-none focus:border-blue-500">
+            <button onclick="login()" class="w-full bg-blue-600 py-3 rounded font-bold hover:bg-blue-500 transition">Enter Panel</button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden container mx-auto p-6 max-w-5xl">
+        <div class="flex justify-between items-center mb-8 bg-gray-800 p-4 rounded-lg sticky top-0 z-50 shadow-lg">
+            <h1 class="text-2xl font-bold text-blue-400">📝 Edit BioData</h1>
+            <button onclick="saveChanges()" id="save-btn" class="bg-green-600 px-8 py-2 rounded-lg font-bold hover:bg-green-500 transition shadow-lg">Save Changes</button>
+        </div>
+
+        <form id="dataForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 md:col-span-2">
+                <h3 class="text-xl font-semibold mb-4 text-gray-300 border-b border-gray-600 pb-2">👤 Profile Header</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-400">Full Name</label>
+                        <input type="text" id="name" class="w-full p-2 bg-gray-900 rounded border border-gray-600 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400">Photo Filename / URL</label>
+                        <input type="text" id="photoUrl" placeholder="e.g. kapin.jpg" class="w-full p-2 bg-gray-900 rounded border border-gray-600 focus:border-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-sm text-gray-400">Tagline (Subtitle)</label>
+                        <input type="text" id="tagline" class="w-full p-2 bg-gray-900 rounded border border-gray-600 focus:border-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-sm text-gray-400">About Me</label>
+                        <textarea id="about" rows="3" class="w-full p-2 bg-gray-900 rounded border border-gray-600 focus:border-blue-500"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h3 class="text-xl font-semibold mb-4 text-gray-300 border-b border-gray-600 pb-2">🎂 Personal Details</h3>
+                <div class="space-y-3">
+                    <input type="text" id="dob" placeholder="DOB" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="age" placeholder="Age" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="birthPlace" placeholder="Birth Place" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="religion" placeholder="Religion" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="caste" placeholder="Caste" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="motherTongue" placeholder="Mother Tongue" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="languages" placeholder="Languages Known" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="maritalStatus" placeholder="Marital Status" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h3 class="text-xl font-semibold mb-4 text-gray-300 border-b border-gray-600 pb-2">💼 Work & Contact</h3>
+                <div class="space-y-3">
+                    <label class="text-sm text-blue-300">Current Job</label>
+                    <input type="text" id="profession" placeholder="Job Title" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="location" placeholder="Work Location" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    
+                    <div class="my-4 border-t border-gray-600"></div>
+                    
+                    <label class="text-sm text-green-300">Contact Details</label>
+                    <input type="text" id="whatsapp" placeholder="WhatsApp (No +)" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                    <input type="text" id="phone" placeholder="Phone Number" class="w-full p-2 bg-gray-900 rounded border border-gray-600">
+                </div>
+            </div>
+
+        </form>
+        <p id="msg" class="text-center mt-6 font-bold text-lg"></p>
+    </div>
+
+    <script>
+        // ============ CONFIGURATION ============
+        const GITHUB_USER = "YOUR_GITHUB_USERNAME";  
+        const REPO_NAME = "YOUR_REPO_NAME";
+        const TOKEN = "YOUR_GITHUB_PAT_TOKEN"; // generate from github developer settings
+        const FILE_NAME = "data.json";
+        // =======================================
+
+        let currentSha = "";
+
+        function login() {
+            if(document.getElementById('admin-pass').value === "admin123") {
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                loadData();
+            } else { alert("Incorrect Password"); }
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_NAME}`);
+                const data = await res.json();
+                currentSha = data.sha;
+                const json = JSON.parse(atob(data.content));
+
+                // Map Fields
+                const fields = ['name', 'tagline', 'about', 'photoUrl', 'dob', 'age', 'birthPlace', 'religion', 'caste', 'motherTongue', 'languages', 'maritalStatus', 'profession', 'location'];
+                fields.forEach(id => {
+                    if(document.getElementById(id)) document.getElementById(id).value = json.profile[id] || "";
+                });
+                
+                document.getElementById('whatsapp').value = json.contact.whatsapp;
+                document.getElementById('phone').value = json.contact.phone;
+
+            } catch(e) { console.error(e); alert("Error loading data from GitHub."); }
+        }
+
+        async function saveChanges() {
+            const btn = document.getElementById('save-btn');
+            btn.innerText = "Saving..."; btn.disabled = true;
+
+            const newJson = {
+                profile: {
+                    name: document.getElementById('name').value,
+                    tagline: document.getElementById('tagline').value,
+                    about: document.getElementById('about').value,
+                    photoUrl: document.getElementById('photoUrl').value,
+                    dob: document.getElementById('dob').value,
+                    age: document.getElementById('age').value,
+                    birthPlace: document.getElementById('birthPlace').value,
+                    religion: document.getElementById('religion').value,
+                    caste: document.getElementById('caste').value,
+                    motherTongue: document.getElementById('motherTongue').value,
+                    languages: document.getElementById('languages').value,
+                    maritalStatus: document.getElementById('maritalStatus').value,
+                    profession: document.getElementById('profession').value,
+                    location: document.getElementById('location').value
+                },
+                contact: {
+                    whatsapp: document.getElementById('whatsapp').value,
+                    phone: document.getElementById('phone').value
+                }
+            };
+
+            const body = {
+                message: "Update via Admin Panel",
+                content: btoa(JSON.stringify(newJson, null, 2)),
+                sha: currentSha
+            };
+
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_NAME}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if(res.ok) {
+                    const data = await res.json();
+                    currentSha = data.content.sha;
+                    document.getElementById('msg').innerText = "✅ Saved! Website will update in 1-2 mins.";
+                    document.getElementById('msg').className = "text-center mt-6 font-bold text-green-400";
+                } else { throw new Error("Update Failed"); }
+            } catch(e) { 
+                alert("Failed to save. Check Console/Token."); 
+            }
+            btn.innerText = "Save Changes"; btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
