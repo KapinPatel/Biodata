@@ -218,9 +218,7 @@
 
   <script>
       // JSON डाटा लोड करने की स्क्रिप्ट
-      fetch('Data.json?v=' + new Date().getTime()) 
-        .then(response => response.json())
-        .then(data => {
+      function loadData(data) {
             // Profile Info
             document.getElementById('hero-name').textContent = data.profile.name;
             document.getElementById('footer-name').textContent = data.profile.name;
@@ -249,8 +247,19 @@
             // Contact Buttons
             document.getElementById('btn-whatsapp').href = `https://wa.me/${data.contact.whatsapp}`;
             document.getElementById('btn-call').href = `tel:+${data.contact.phone}`;
-        })
-        .catch(err => console.error("Error loading data:", err));
+      }
+
+      // First try localStorage
+      const localData = localStorage.getItem('biodata');
+      if (localData) {
+          loadData(JSON.parse(localData));
+      } else {
+          // Fallback to Data.json
+          fetch('Data.json?v=' + new Date().getTime()) 
+            .then(response => response.json())
+            .then(data => loadData(data))
+            .catch(err => console.error("Error loading data:", err));
+      }
 
         // PDF Button (Mock function)
         document.getElementById('download-btn').addEventListener('click', function(e) {

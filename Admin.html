@@ -81,13 +81,8 @@
 
     <script>
         // ============ CONFIGURATION ============
-        const GITHUB_USER = "KapinPatel";  
-        const REPO_NAME = "Biodata";
-        const TOKEN = "YOUR_GITHUB_PAT_TOKEN"; // generate from github developer settings
-        const FILE_NAME = "Data.json";
+        // For local development, using localStorage instead of GitHub API
         // =======================================
-
-        let currentSha = "";
 
         function login() {
             if(document.getElementById('admin-pass').value === "admin123") {
@@ -97,13 +92,10 @@
             } else { alert("Incorrect Password"); }
         }
 
-        async function loadData() {
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_NAME}`);
-                const data = await res.json();
-                currentSha = data.sha;
-                const json = JSON.parse(atob(data.content));
-
+        function loadData() {
+            const data = localStorage.getItem('biodata');
+            if (data) {
+                const json = JSON.parse(data);
                 // Map Fields
                 const fields = ['name', 'tagline', 'about', 'photoUrl', 'dob', 'age', 'birthPlace', 'religion', 'caste', 'motherTongue', 'languages', 'maritalStatus', 'profession', 'location'];
                 fields.forEach(id => {
@@ -112,11 +104,25 @@
                 
                 document.getElementById('whatsapp').value = json.contact.whatsapp;
                 document.getElementById('phone').value = json.contact.phone;
-
-            } catch(e) { console.error(e); alert("Error loading data from GitHub."); }
+            } else {
+                // Load from Data.json if no localStorage
+                fetch('Data.json?v=' + new Date().getTime()) 
+                    .then(response => response.json())
+                    .then(json => {
+                        // Map Fields
+                        const fields = ['name', 'tagline', 'about', 'photoUrl', 'dob', 'age', 'birthPlace', 'religion', 'caste', 'motherTongue', 'languages', 'maritalStatus', 'profession', 'location'];
+                        fields.forEach(id => {
+                            if(document.getElementById(id)) document.getElementById(id).value = json.profile[id] || "";
+                        });
+                        
+                        document.getElementById('whatsapp').value = json.contact.whatsapp;
+                        document.getElementById('phone').value = json.contact.phone;
+                    })
+                    .catch(err => console.error("Error loading data:", err));
+            }
         }
 
-        async function saveChanges() {
+        function saveChanges() {
             const btn = document.getElementById('save-btn');
             btn.innerText = "Saving..."; btn.disabled = true;
 
@@ -143,28 +149,15 @@
                 }
             };
 
-            const body = {
-                message: "Update via Admin Panel",
-                content: btoa(JSON.stringify(newJson, null, 2)),
-                sha: currentSha
-            };
+            // Save to localStorage
+            localStorage.setItem('biodata', JSON.stringify(newJson));
 
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_NAME}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
+            // Also update Data.json if possible (for persistence)
+            // But since it's static, localStorage is used for dev
 
-                if(res.ok) {
-                    const data = await res.json();
-                    currentSha = data.content.sha;
-                    document.getElementById('msg').innerText = "✅ Saved! Website will update in 1-2 mins.";
-                    document.getElementById('msg').className = "text-center mt-6 font-bold text-green-400";
-                } else { throw new Error("Update Failed"); }
-            } catch(e) { 
-                alert("Failed to save. Check Console/Token."); 
-            }
+            document.getElementById('msg').innerText = "✅ Saved locally! Refresh the main page to see changes.";
+            document.getElementById('msg').className = "text-center mt-6 font-bold text-green-400";
+
             btn.innerText = "Save Changes"; btn.disabled = false;
         }
     </script>
