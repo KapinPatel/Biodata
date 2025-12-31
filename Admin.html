@@ -160,6 +160,7 @@
             const message = 'Update biodata via admin panel';
 
             try {
+                console.log('Starting GitHub API call...');
                 // Pehle current file ka SHA get karo
                 const getResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
                     headers: {
@@ -167,11 +168,17 @@
                         'Accept': 'application/vnd.github.v3+json'
                     }
                 });
+                console.log('Get response status:', getResponse.status);
+                if (!getResponse.ok) {
+                    throw new Error(`Failed to get file: ${getResponse.status} ${getResponse.statusText}`);
+                }
                 const fileData = await getResponse.json();
                 const sha = fileData.sha;
+                console.log('SHA:', sha);
 
                 // New content encode karo (base64)
                 const content = btoa(JSON.stringify(newJson, null, 2));
+                console.log('Content encoded');
 
                 // Commit karo
                 const updateResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
@@ -187,15 +194,16 @@
                         sha: sha
                     })
                 });
-
+                console.log('Update response status:', updateResponse.status);
                 if (updateResponse.ok) {
                     document.getElementById('msg').innerText = "✅ Saved and committed to GitHub!";
                     document.getElementById('msg').className = "text-center mt-6 font-bold text-green-400";
                 } else {
-                    throw new Error('Commit failed');
+                    const errorText = await updateResponse.text();
+                    throw new Error(`Commit failed: ${updateResponse.status} ${updateResponse.statusText} - ${errorText}`);
                 }
             } catch (error) {
-                console.error(error);
+                console.error('GitHub API Error:', error);
                 document.getElementById('msg').innerText = "❌ Error saving to GitHub. Check console.";
                 document.getElementById('msg').className = "text-center mt-6 font-bold text-red-400";
             }
