@@ -1,0 +1,22 @@
+{
+  "profile": {
+    "name": "Kapin Patel",
+    "tagline": "Software Developer | Tech Enthusiast | Family-Oriented",
+    "about": "A dedicated software developer with strong family values and traditional roots. I believe in maintaining a balance between modern professional life and cultural heritage.",
+    "photoUrl": "https://via.placeholder.com/180",
+    "dob": "19 June 2000",
+    "age": "25 Years",
+    "birthPlace": "Kuiyan Kalan, Raipur Karchuliyaan, Rewa, MP",
+    "religion": "Hindu",
+    "caste": "Patel",
+    "motherTongue": "Hindi, Bagheli",
+    "languages": "Hindi, English",
+    "maritalStatus": "Unmarried",
+    "profession": "Software Developer",
+    "location": "Ahmedabad, Gujarat"
+  },
+  "contact": {
+    "whatsapp": "919999999999",
+    "phone": "919999999999"
+  }
+}
