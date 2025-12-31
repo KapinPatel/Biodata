@@ -122,7 +122,7 @@
             }
         }
 
-        function saveChanges() {
+        async function saveChanges() {
             const btn = document.getElementById('save-btn');
             btn.innerText = "Saving..."; btn.disabled = true;
 
@@ -152,11 +152,53 @@
             // Save to localStorage
             localStorage.setItem('biodata', JSON.stringify(newJson));
 
-            // Also update Data.json if possible (for persistence)
-            // But since it's static, localStorage is used for dev
+            // GitHub API se Data.json update karo
+            const token = 'YOUR_GITHUB_PAT_HERE'; // Replace with actual token
+            const owner = 'KapinPatel';
+            const repo = 'Biodata';
+            const path = 'Data.json';
+            const message = 'Update biodata via admin panel';
 
-            document.getElementById('msg').innerText = "✅ Saved locally! Refresh the main page to see changes.";
-            document.getElementById('msg').className = "text-center mt-6 font-bold text-green-400";
+            try {
+                // Pehle current file ka SHA get karo
+                const getResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                const fileData = await getResponse.json();
+                const sha = fileData.sha;
+
+                // New content encode karo (base64)
+                const content = btoa(JSON.stringify(newJson, null, 2));
+
+                // Commit karo
+                const updateResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        content: content,
+                        sha: sha
+                    })
+                });
+
+                if (updateResponse.ok) {
+                    document.getElementById('msg').innerText = "✅ Saved and committed to GitHub!";
+                    document.getElementById('msg').className = "text-center mt-6 font-bold text-green-400";
+                } else {
+                    throw new Error('Commit failed');
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('msg').innerText = "❌ Error saving to GitHub. Check console.";
+                document.getElementById('msg').className = "text-center mt-6 font-bold text-red-400";
+            }
 
             btn.innerText = "Save Changes"; btn.disabled = false;
         }
